@@ -88,6 +88,16 @@ def input(dataset, batch_size):
 
         yield dataset[row_number, :]
 
+def spliting(dataset, size):
+    '''
+    留一法划分训练和测试集
+    :param dataset: 特征数据集/标签
+    :param size: 测试集大小
+    :return: 测试集特征矩阵/标签
+    '''
+    row_number = np.random.randint(low=0, high=len(dataset)-1, size=(size))
+    return dataset[row_number, :]
+
 def guiyi(dataset):
     '''
     对带标签的数据集进行特征归一化
@@ -102,13 +112,13 @@ def guiyi(dataset):
 
 if __name__ == '__main__':
     rng = np.random.RandomState(0)
-    # p = '/home/xiaosong/桌面/PNY_all.pickle'
-    # with open(p, 'rb') as f:
-    #     data = pickle.load(f)
+    p = '/home/xiaosong/桌面/PNY_all.pickle'
+    with open(p, 'rb') as f:
+        data = pickle.load(f)
     p1 = '/home/xiaosong/桌面/PNY_train.pickle'
     p2 = '/home/xiaosong/桌面/PNY_test.pickle'
     #划分训练集和测试集
-    # train_testspliting(dataset=data, train_path=p1, test_path=p2)
+    train_testspliting(dataset=data, train_path=p1, test_path=p2)
     data1 = LoadFile(p1)
     print(data1.shape)
     data2 = LoadFile(p2)

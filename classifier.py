@@ -17,27 +17,28 @@ def layers(x_f, x_l, is_training):
     :return: 神经网络最后输出
     '''
     with tf.name_scope('cnn'):
-        x_conv = tf.reshape(tensor=x_l, shape=[-1, 4, 5, 1], name='x_conv')
-        conv1 = tf.keras.layers.Conv2D(filters=32, kernel_size=[3, 3], padding='same', activation=tf.nn.relu,
+        x_conv = tf.reshape(tensor=x_l, shape=[-1, 10, 10, 1], name='x_conv')
+        conv1 = tf.keras.layers.Conv2D(filters=32, kernel_size=[5, 5], padding='same', activation=tf.nn.relu,
                                        kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv1')(x_conv)
-        conv2 = tf.keras.layers.Conv2D(filters=64, kernel_size=[3, 3], padding='same', activation=tf.nn.relu,
-                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv2')(conv1)
-        pool1 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool1')(conv2)
+        pool1 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool1')(conv1)
         bn1 = tf.keras.layers.BatchNormalization(name='bn_input1')
         bn_input1 = bn1(inputs=pool1, training=is_training)
         # 添加bn层节点依赖
         tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, bn1.updates)
-
-        conv3 = tf.keras.layers.Conv2D(filters=128, kernel_size=[2, 2], padding='same', activation=tf.nn.relu,
-                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv3')(
-            bn_input1)
+        conv2 = tf.keras.layers.Conv2D(filters=64, kernel_size=[3, 3], padding='same', activation=tf.nn.relu,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv2')(bn_input1)
+        conv3 = tf.keras.layers.Conv2D(filters=128, kernel_size=[3, 3], padding='same', activation=tf.nn.relu,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv3')(conv2)
+        pool2 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool2')(conv3)
         bn2 = tf.keras.layers.BatchNormalization(name='bn_input2')
-        bn_input2 = bn2(inputs=conv3, training=is_training)
+        bn_input2 = bn2(inputs=pool2, training=is_training)
         # 添加bn层节点依赖
         tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, bn2.updates)
-        flat1 = tf.keras.layers.Flatten(name='flat1')(bn_input2)
+        conv4 = tf.keras.layers.Conv2D(filters=128, kernel_size=[2, 2], padding='same', activation=tf.nn.relu,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv4')(bn_input2)
+        flat1 = tf.keras.layers.Flatten(name='flat1')(conv4)
     with tf.name_scope('rnn'):
-        x_lstm = tf.reshape(tensor=flat1, shape=[-1, 24, 32], name='x_lstm')
+        x_lstm = tf.reshape(tensor=flat1, shape=[-1, 36, 32], name='x_lstm')
         lstm1 = tf.keras.layers.LSTM(units=128, dropout=0.8, return_sequences=True, name='lstm1')(x_lstm)
         lstm2 = tf.keras.layers.LSTM(units=128, dropout=0.8, return_sequences=False, name='lstm2')(lstm1)
         flat2 = tf.keras.layers.Flatten(name='flat2')(lstm2)
@@ -51,7 +52,7 @@ def layers(x_f, x_l, is_training):
                                       kernel_initializer=tf.keras.initializers.TruncatedNormal,
                                       bias_initializer=tf.keras.initializers.TruncatedNormal, name='x_fc2')(x_dpt1)
         x_dpt2 = tf.keras.layers.Dropout(rate=0.2, name='x_dpt2')(inputs=x_fc2, training=is_training)
-        output = tf.keras.layers.Dense(units=15, activation=tf.nn.relu, use_bias=True,
+        output = tf.keras.layers.Dense(units=4, activation=tf.nn.relu, use_bias=True,
                                        kernel_initializer=tf.keras.initializers.TruncatedNormal,
                                        bias_initializer=tf.keras.initializers.TruncatedNormal, name='output')(x_dpt2)
         output = tf.keras.activations.softmax(x=output)

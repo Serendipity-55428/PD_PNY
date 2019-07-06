@@ -12,8 +12,9 @@ import pickle
 import numpy as np
 import xlwt
 import pandas as pd
-# from Stacking.Routine_operation import LoadFile
+import bisect
 from collections import Counter
+from inputdata import LoadFile, SaveFile
 
 def GeneratorData(type, filename_prefix):
     '''
@@ -98,16 +99,6 @@ def Numpy2Excel(data, save_p, name= 'PNY'):
 
     file.save(save_p)
 
-def SaveFile(data, savepickle_p):
-    '''
-    存储整理好的数据'
-    :param data: 待存储数据
-    :param savepickle_p: pickle后缀文件存储绝对路径
-    :return: None
-    '''''
-    if not os.path.exists(savepickle_p):
-        with open(savepickle_p, 'wb') as file:
-            pickle.dump(data, file)
 
 def checkclassifier(vector):
     '''
@@ -120,78 +111,108 @@ def checkclassifier(vector):
         print('%s: %s' % (key, value))
     print('\n')
 
+# 类别划分通用函数
+def transform(label):
+    '''
+    将回归标签转换为类别标签
+    :param label: 待转换回归标签
+    :return: 类别标签
+    '''
+    def divide(x):
+        divide_point = [10, 20, 100, 300] #划分半径大类别标签
+        divide_label = [i for i in range(4)]
+        position = bisect.bisect(a=divide_point, x=x)
+        return divide_label[position]
+    divide_ufunc = np.frompyfunc(divide, 1, 1)
+    return divide_ufunc(label)
+
+#制作六类标签
+def big_classify(dataset, func):
+    '''
+    大类标签制作器
+    :param dataset: 数据集/标签
+    :param func: 大分类函数
+    :return: 根据大类分割后的数据集, 标签为单列数字
+    '''
+    #提取标签
+    label = dataset[:, -1]
+    #生成类别标签
+    label_class = func(label)
+    #合成新数据
+    new_dataset = np.hstack((dataset[:, :-1], label_class[:, np.newaxis]))
+    print(Counter(label_class))
+    return new_dataset
+
 if __name__ == '__main__':
     rng = np.random.RandomState(2)
     #生成pny数据
-    type= 1
-    filename_prefix = r'/home/xiaosong/pny'
-    dataset = GeneratorData(type= type, filename_prefix= filename_prefix)
-    rng.shuffle(dataset)
+    # type= 1
+    # filename_prefix = r'/home/xiaosong/pny'
+    # dataset = GeneratorData(type= type, filename_prefix= filename_prefix)
+    # rng.shuffle(dataset)
 
     #检查最优半径为0.01的数量
-    zero_r, nonzero_r = 0, 0
-    r = dataset[:, -1]
-    for i in r:
-        if i == 0.01:
-            zero_r += 1
-    nonzero_r = len(r) - zero_r
-    print('最优半径为0.01个数: %s \n最优半径不为0.01的个数: %s' % (zero_r, nonzero_r))
+    # zero_r, nonzero_r = 0, 0
+    # r = dataset[:, -1]
+    # for i in r:
+    #     if i == 0.01:
+    #         zero_r += 1
+    # nonzero_r = len(r) - zero_r
+    # print('最优半径为0.01个数: %s \n最优半径不为0.01的个数: %s' % (zero_r, nonzero_r))
     # print(dataset)
-    print(dataset.shape)
-    print(dataset.dtype)
+    # print(dataset.shape)
+    # print(dataset.dtype)
 
     #保存文件到.xlsx/.pickle
     save_pickle = r'/home/xiaosong/桌面/PNY_all.pickle'
-    save_xlsx = r'/home/xiaosong/桌面/datasets.xlsx'
+    # save_xlsx = r'/home/xiaosong/桌面/datasets.xlsx'
     # Numpy2Excel(data= dataset, save_p= save_xlsx)
     # SaveFile(data=dataset, savepickle_p=save_pickle)
 
     #划分最优半径含0.01和不含0.01的数据
     # data_all_ = LoadFile(p=save_pickle)
     # data_all = pd.DataFrame(data_all_)
-    # # print(data_all)
-    # data_no_noise = data_all.ix[data_all[24] != 0.01]
-    # data_noise = data_all.ix[data_all[24] == 0.01]
+    # print(data_all)
+    # data_no_noise = data_all.loc[data_all[24] != 0.01]
+    # data_noise = data_all.loc[data_all[24] == 0.01]
     # data_no_noise = np.array(data_no_noise)
     # data_noise = np.array(data_noise)
     # print(np.array(data_no_noise).shape, np.array(data_noise).shape)
-    # SaveFile(data=data_noise, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_noise.pickle')
-    # SaveFile(data=data_no_noise, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_no_noise.pickle')
-    # data_noise = LoadFile(p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_noise.pickle')
-    # data_no_noise = LoadFile(r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_no_noise.pickle')
+    # SaveFile(data=data_noise, savepickle_p=r'/home/xiaosong/桌面/PNY_noise.pickle')
+    # SaveFile(data=data_no_noise, savepickle_p=r'/home/xiaosong/桌面/PNY_no_noise.pickle')
+    # data_noise = LoadFile(p=r'/home/xiaosong/桌面/PNY_noise.pickle')
+    # data_no_noise = LoadFile(r'/home/xiaosong/桌面/PNY_no_noise.pickle')
     # print(data_noise.shape, data_no_noise.shape)
+
     #制作数量为10000的数据集，无噪声数据集数量不够可以用少量噪声数据集进行填充
     # data_train = np.vstack((data_no_noise, data_noise[:(10000-data_no_noise.shape[0]), :]))
     # rng.shuffle(data_train)
-    # SaveFile(data=data_train, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_data_train.pickle')
+    # SaveFile(data=data_train, savepickle_p=r'/home/xiaosong/桌面/PNY_data_train.pickle')
     # print(data_train.shape)
-    statistic = Counter(dataset[:, -1])
-    for key, value in statistic.items():
-        print('%s: %s' % (key, value))
+    # statistic = Counter(data_train[:, -1])
+    # for key, value in statistic.items():
+    #     print('%s: %s' % (key, value))
+
     #制作平均密度序列的fft变换膜值序列
-    # data_fft_noise = np.hstack((np.abs(np.fft.fft(a=data_noise[:, 4:-1], n=100, axis=1)),data_noise[:, :4], data_noise[:, -1][:, np.newaxis]))
-    # data_fft_no_noise = np.hstack((np.abs(np.fft.fft(a=data_no_noise[:, 4:-1], n=100, axis=1)),data_no_noise[:, :4], data_no_noise[:, -1][:, np.newaxis]))
+    # data_fft_noise = np.hstack((data_noise[:, :4], np.abs(np.fft.fft(a=data_noise[:, 4:-1], n=100, axis=1)), data_noise[:, -1][:, np.newaxis]))
+    # data_fft_no_noise = np.hstack((data_no_noise[:, :4], np.abs(np.fft.fft(a=data_no_noise[:, 4:-1], n=100, axis=1)), data_no_noise[:, -1][:, np.newaxis]))
     # print(data_fft_noise.shape, data_fft_no_noise.shape)
-    # SaveFile(data=data_fft_noise, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_fft_noise.pickle')
-    # SaveFile(data=data_fft_no_noise, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_fft_no_noise.pickle')
+    # SaveFile(data=data_fft_noise, savepickle_p=r'/home/xiaosong/桌面/PNY_fft_noise.pickle')
+    # SaveFile(data=data_fft_no_noise, savepickle_p=r'/home/xiaosong/桌面/PNY_fft_no_noise.pickle')
+
     #制作数量为10000的fft变换取模后的数据集
     # data_fft = np.vstack((data_fft_no_noise, data_fft_noise[:(10000-data_fft_no_noise.shape[0]), :]))
     # rng.shuffle(data_fft)
-    # # SaveFile(data=data_fft, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_data_fft.pickle')
+    # SaveFile(data=data_fft, savepickle_p=r'/home/xiaosong/桌面/PNY_data_fft.pickle')
     # print(data_fft.shape)
 
-    #对原始数据和经过傅里叶变换后的数据进行列归一化
-    # data_PNY = LoadFile(p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_data_train.pickle')
-    # data_PNY = (data_PNY - np.min(data_PNY, axis=0)) / (np.max(data_PNY, axis=0) - np.min(data_PNY, axis=0))
-    # checkclassifier(data_PNY[:, -1])
-    # SaveFile(data=data_PNY, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_data_norm.pickle')
+    #制作大类标签数据集
+    # data_fft = LoadFile(p=r'/home/xiaosong/桌面/PNY_data_fft.pickle')
+    # fft_data_bigclass = big_classify(dataset=data_fft, func=transform)
+    # SaveFile(data=fft_data_bigclass, savepickle_p=r'/home/xiaosong/桌面/PNY_fft_dadta_bigclass.pickle')
 
 
-    #对经过fft变换取模后的数据进行列归一化
-    # data_PNY_fft = LoadFile(p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_data_fft.pickle')
-    # data_PNY_fft = (data_PNY_fft - np.min(data_PNY_fft, axis=0)) / (np.max(data_PNY_fft, axis=0) - np.min(data_PNY_fft, axis=0))
-    # checkclassifier(data_PNY_fft[:, -1])
-    # SaveFile(data=data_PNY_fft, savepickle_p=r'F:\ProximityDetection\Stacking\dataset_PNY\PNY_fft_norm.pickle')
+
 
 
 
