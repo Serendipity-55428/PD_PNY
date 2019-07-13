@@ -48,7 +48,7 @@ def onehot(dataset):
     label_pri = dataset[:, -1]
     label_dict = Counter(label_pri)
     #标签生序字典
-    label_sort = sorted(label_dict.items(), key=lambda l: l[-1])
+    label_sort = sorted(label_dict.items(), key=lambda l: l[0])
     label_pri_pd = pd.DataFrame(data=dataset, columns=[str(i) for i in range(dataset.shape[-1])])
     #数据集按标签生序排列
     label_pri_pd.sort_values('%s' % label_pri_pd.columns[-1], inplace=True)
@@ -83,20 +83,21 @@ def input(dataset, batch_size):
     :param batch_size: 批次大小
     :return: 特征矩阵/标签
     '''
-    for i in range(dataset.shape[0]//batch_size):
-        row_number = np.random.randint(low=0, high=len(dataset)-1, size=(batch_size))
-
-        yield dataset[row_number, :]
+    for i in range(0, len(dataset), batch_size):
+        yield dataset[i:i+batch_size, :]
 
 def spliting(dataset, size):
     '''
     留一法划分训练和测试集
     :param dataset: 特征数据集/标签
     :param size: 测试集大小
-    :return: 测试集特征矩阵/标签
+    :return: 训练集和测试集特征矩阵/标签
     '''
-    row_number = np.random.randint(low=0, high=len(dataset)-1, size=(size))
-    return dataset[row_number, :]
+    #随机得到size大小的交叉验证集
+    test_row = np.random.randint(low=0, high=len(dataset)-1, size=(size))
+    #从dataset中排除交叉验证集
+    train_row = list(filter(lambda x: x not in test_row, range(len(dataset)-1)))
+    return dataset[train_row, :], dataset[test_row, :]
 
 def guiyi(dataset):
     '''
@@ -112,14 +113,20 @@ def guiyi(dataset):
 
 if __name__ == '__main__':
     rng = np.random.RandomState(0)
-    p = '/home/xiaosong/桌面/PNY_all.pickle'
+    p = '/home/xiaosong/桌面/PNY_fft_dadta_bigclass.pickle'
     with open(p, 'rb') as f:
         data = pickle.load(f)
     p1 = '/home/xiaosong/桌面/PNY_train.pickle'
     p2 = '/home/xiaosong/桌面/PNY_test.pickle'
     #划分训练集和测试集
-    train_testspliting(dataset=data, train_path=p1, test_path=p2)
-    data1 = LoadFile(p1)
-    print(data1.shape)
-    data2 = LoadFile(p2)
-    print(data2.shape)
+    # train_testspliting(dataset=data, train_path=p1, test_path=p2)
+    # data1 = LoadFile(p1)
+    # print(data1.shape)
+    # data2 = LoadFile(p2)
+    # print(data2.shape)
+    sta = Counter(data[:, -1])
+    print(sta)
+    sta_1 = onehot(data)
+    sta_1 = sta_1[:, -4:]
+    sta_1 = np.sum(sta_1, axis=0)
+    print(sta_1)

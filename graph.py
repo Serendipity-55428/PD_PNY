@@ -21,8 +21,8 @@ def session(dataset_path, train_path, test_path):
     '''
     #导入数据集
     dataset = LoadFile(p=dataset_path)
-    dataset = guiyi(dataset)
-    dataset = onehot(dataset)
+    # dataset = guiyi(dataset)
+    # dataset = onehot(dataset)
     # training_set = LoadFile(p=train_path)
     # testing_set = LoadFile(p=test_path)
     # #特征归一化
@@ -52,20 +52,22 @@ def session(dataset_path, train_path, test_path):
             gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options), graph=g) as sess:
         sess.run(init)
+        #划分训练集和测试集
+        train_data, test_data = spliting(dataset, 5*190)
         for i in range(10000):
-            for data in input(dataset=dataset, batch_size=1000):
-                _ = sess.run(opt, feed_dict={x_f:data[:, :4], x_l:data[:, 4:-4], y:data[:, -4:],
-                                             learning_rate:1e-4, is_training:True})
+            for data in input(dataset=train_data, batch_size=5*190):
+                _ = sess.run(opt, feed_dict={x_f:data[:, 100:-4], x_l:data[:, :100], y:data[:, -4:],
+                                             learning_rate:1e-2, is_training:True})
+                if i % 100 == 0:
+                    loss_ = sess.run(loss, feed_dict={x_f: data[:, 100:-4], x_l: data[:, :100], y: data[:, -4:],
+                                                      is_training: True})
             if i % 100 == 0:
-                loss_ = sess.run(loss, feed_dict={x_f:data[:, :4], x_l:data[:, 4:-4], y:data[:, -4:],
-                                                  is_training:True})
-                testing_set = spliting(dataset, size=2000)
-                acc_ = sess.run(acc, feed_dict={x_f:testing_set[:, :4], x_l:testing_set[:, 4:-4],
-                                                    y:testing_set[:, -4:], is_training:False})
+                acc_ = sess.run(acc, feed_dict={x_f:test_data[:, 100:-4], x_l:test_data[:, :100],
+                                                    y:test_data[:, -4:], is_training:False})
                 print('第%s轮训练集损失函数值为: %s  测试集准确率为: %s' % (i, loss_, acc_))
 
 if __name__ == '__main__':
-    p = r'/home/xiaosong/桌面/PNY_fft_dadta_bigclass.pickle'
+    p = r'/home/xiaosong/桌面/PNY_fft_cl.pickle'
     p1 = r'/home/xiaosong/桌面/PNY_train.pickle'
     p2 = r'/home/xiaosong/桌面/PNY_test.pickle'
     session(dataset_path=p, train_path=p1, test_path=p2)
