@@ -146,22 +146,24 @@ def big_classify(dataset, func):
 if __name__ == '__main__':
     rng = np.random.RandomState(2)
     #生成pny数据
-    # type= 1
-    # filename_prefix = r'/home/xiaosong/pny'
-    # dataset = GeneratorData(type= type, filename_prefix= filename_prefix)
-    # rng.shuffle(dataset)
+    type= 1
+    filename_prefix = r'/home/xiaosong/pny'
+    dataset = GeneratorData(type= type, filename_prefix= filename_prefix)
+    rng.shuffle(dataset)
+    #查看数据中各个半径的数量
+    checkclassifier(dataset[:, -1])
 
     #检查最优半径为0.01的数量
-    # zero_r, nonzero_r = 0, 0
-    # r = dataset[:, -1]
-    # for i in r:
-    #     if i == 0.01:
-    #         zero_r += 1
-    # nonzero_r = len(r) - zero_r
-    # print('最优半径为0.01个数: %s \n最优半径不为0.01的个数: %s' % (zero_r, nonzero_r))
+    zero_r, nonzero_r = 0, 0
+    r = dataset[:, -1]
+    for i in r:
+        if i == 0.01:
+            zero_r += 1
+    nonzero_r = len(r) - zero_r
+    print('最优半径为0.01个数: %s \n最优半径不为0.01的个数: %s' % (zero_r, nonzero_r))
     # print(dataset)
-    # print(dataset.shape)
-    # print(dataset.dtype)
+    print(dataset.shape)
+    print(dataset.dtype)
 
     #保存文件到.xlsx/.pickle
     save_pickle = r'/home/xiaosong/桌面/PNY_all.pickle'
