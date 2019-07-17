@@ -59,6 +59,7 @@ def onehot(dataset):
         one_hot_metric[index:index+group[-1], label_sort.index(group)] = 1
         index += group[-1]
     dataset_onehot = np.hstack((label_pri_sort[:, :-1], one_hot_metric))
+    np.random.shuffle(dataset_onehot)
     return dataset_onehot
 
 def train_testspliting(dataset, train_path, test_path):

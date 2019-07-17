@@ -11,7 +11,7 @@
 import numpy as np
 import pandas as pd
 from collections import Counter
-from inputdata import LoadFile, SaveFile
+from inputdata import LoadFile, SaveFile, guiyi, onehot
 from DataRead import checkclassifier
 
 def making(nums_cl, dataset):
@@ -45,6 +45,16 @@ def making(nums_cl, dataset):
         i += 1
     return dataset_output
 
+def fft_transformer(dataset, N):
+    '''
+    对矩阵中各行按照指定点数做FFT变换
+    :param dataset: 待处理矩阵
+    :param N: 变换后点数
+    :return: 处理后矩阵
+    '''
+    fft_abs = np.abs(np.fft.fft(a=dataset, n=N, axis=1))
+    return fft_abs
+
 if __name__ == '__main__':
     p = r'/home/xiaosong/桌面/PNY_all.pickle'
     dataset = LoadFile(p)
@@ -54,3 +64,13 @@ if __name__ == '__main__':
     print(dataset_output.shape)
     checkclassifier(dataset_output[:, -1])
     # SaveFile(dataset_output, savepickle_p=r'/home/xiaosong/桌面/PNY_3cl.pickle')
+    dataset_4feature, dataset_dense, label = dataset_output[:, :4], dataset_output[:, 4:-1], dataset_output[:, -1][:, np.newaxis]
+    dataset_fft = fft_transformer(dataset_dense, 100)
+    dataset = np.hstack((dataset_4feature, dataset_fft, label))
+    dataset_guiyi = guiyi(dataset)
+    print(dataset_guiyi.shape)
+    print(np.min(dataset_guiyi, axis=0))
+    # SaveFile(data=dataset_guiyi, savepickle_p=r'/home/xiaosong/桌面/PNY_3cl.pickle')
+    dataset_onehot = onehot(dataset_guiyi)
+    print(np.sum(dataset_onehot[:, -3:], axis=0))
+
