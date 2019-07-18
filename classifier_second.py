@@ -81,6 +81,73 @@ class Resnet:
         relu = tf.keras.layers.ReLU(name=self.__name)(combination)
         return relu
 
+def subnet_1(x_f, x_l, is_training):
+    '''
+    三分类残差网络层
+    :param x_f: 4个与密度无关特征
+    :param x_l: 100个密度特征
+    :param is_training: 指示是否在训练
+    :return: 神经网络最后输出
+    '''
+    with tf.name_scope('sub_cnn'):
+        x_reshape = tf.reshape(tensor=x_l, shape=[-1, 10, 10, 1], name='x_reshape')
+        conv = tf.keras.layers.Conv2D(filters=16, kernel_size=[5, 5], padding='same', activation=tf.nn.relu,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv1')(x_reshape)
+        pool1 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool1')(conv)
+        resnet = Resnet(x=pool1, filters=32, kernel_size=[3, 3], name='resnet1')
+        res1 = resnet.resnet_2layers()
+        resnet2 = Resnet(x=res1, filters=128, kernel_size=[3, 3], name='resnet2')
+        res2 = resnet2.resnet_3layers()
+        flat = tf.keras.layers.Flatten(name='flat')(res2)
+    with tf.name_scope('sub_dnn'):
+        x_dnn = tf.concat(values=[flat, x_f], axis=1)
+        x_fc1 = tf.keras.layers.Dense(units=100, activation=tf.nn.relu, use_bias=True,
+                                      kernel_initializer=tf.keras.initializers.TruncatedNormal,
+                                      bias_initializer=tf.keras.initializers.TruncatedNormal, name='x_fc1')(x_dnn)
+        x_dpt1 = tf.keras.layers.Dropout(rate=0.2, name='x_dpt1')(inputs=x_fc1, training=is_training)
+        x_fc2 = tf.keras.layers.Dense(units=200, activation=tf.nn.relu, use_bias=True,
+                                      kernel_initializer=tf.keras.initializers.TruncatedNormal,
+                                      bias_initializer=tf.keras.initializers.TruncatedNormal, name='x_fc2')(x_dpt1)
+        x_dpt2 = tf.keras.layers.Dropout(rate=0.2, name='x_dpt2')(inputs=x_fc2, training=is_training)
+        output = tf.keras.layers.Dense(units=3, activation=tf.nn.relu, use_bias=True,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal,
+                                       bias_initializer=tf.keras.initializers.TruncatedNormal, name='output')(x_dpt2)
+        output2 = tf.keras.activations.softmax(x=output)
+        return output2
+
+def subnet_2(x_f, x_l, is_training):
+    '''
+    11分类残差网络层
+    :param x_f: 4个与密度无关特征
+    :param x_l: 100个密度特征
+    :param is_training: 指示是否在训练
+    :return: 神经网络最后输出
+    '''
+    with tf.name_scope('sub_cnn'):
+        x_reshape = tf.reshape(tensor=x_l, shape=[-1, 10, 10, 1], name='x_reshape')
+        conv = tf.keras.layers.Conv2D(filters=16, kernel_size=[5, 5], padding='same', activation=tf.nn.relu,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv1')(x_reshape)
+        pool1 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool1')(conv)
+        resnet = Resnet(x=pool1, filters=32, kernel_size=[3, 3], name='resnet1')
+        res1 = resnet.resnet_2layers()
+        resnet2 = Resnet(x=res1, filters=128, kernel_size=[3, 3], name='resnet2')
+        res2 = resnet2.resnet_3layers()
+        flat = tf.keras.layers.Flatten(name='flat')(res2)
+    with tf.name_scope('sub_dnn'):
+        x_dnn = tf.concat(values=[flat, x_f], axis=1)
+        x_fc1 = tf.keras.layers.Dense(units=100, activation=tf.nn.relu, use_bias=True,
+                                      kernel_initializer=tf.keras.initializers.TruncatedNormal,
+                                      bias_initializer=tf.keras.initializers.TruncatedNormal, name='x_fc1')(x_dnn)
+        x_dpt1 = tf.keras.layers.Dropout(rate=0.2, name='x_dpt1')(inputs=x_fc1, training=is_training)
+        x_fc2 = tf.keras.layers.Dense(units=200, activation=tf.nn.relu, use_bias=True,
+                                      kernel_initializer=tf.keras.initializers.TruncatedNormal,
+                                      bias_initializer=tf.keras.initializers.TruncatedNormal, name='x_fc2')(x_dpt1)
+        x_dpt2 = tf.keras.layers.Dropout(rate=0.2, name='x_dpt2')(inputs=x_fc2, training=is_training)
+        output = tf.keras.layers.Dense(units=3, activation=tf.nn.relu, use_bias=True,
+                                       kernel_initializer=tf.keras.initializers.TruncatedNormal,
+                                       bias_initializer=tf.keras.initializers.TruncatedNormal, name='output')(x_dpt2)
+        output2 = tf.keras.activations.softmax(x=output)
+        return output2
 
 
 
