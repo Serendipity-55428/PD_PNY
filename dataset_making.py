@@ -4,7 +4,7 @@
 @author: songyunlong
 @license: (C) Copyright 2018-2021, Node Supply Chain Manager Corporation Limited.
 @contact: 1243049371@qq.com
-@software: garner
+@software: Pycharm
 @file: dataset_making
 @time: 2019/7/15 下午4:09
 '''
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     dataset_guiyi = guiyi(dataset)
     print(dataset_guiyi.shape)
     print(np.min(dataset_guiyi, axis=0))
-    # SaveFile(data=dataset_guiyi, savepickle_p=r'/home/xiaosong/桌面/PNY_3cl.pickle')
+    SaveFile(data=dataset_guiyi, savepickle_p=r'/home/xiaosong/桌面/PNY_3cl.pickle')
     dataset_onehot = onehot(dataset_guiyi)
     print(np.sum(dataset_onehot[:, -3:], axis=0))
 

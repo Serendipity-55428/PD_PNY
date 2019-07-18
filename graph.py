@@ -10,8 +10,9 @@
 import tensorflow as tf
 import numpy as np
 from inputdata import LoadFile, SaveFile, onehot, input, guiyi, spliting
-from classifier import layers
+from classifier_first import layers
 from Saving_model_pb import SaveImport_model
+
 def session(dataset_path, train_path='', test_path=''):
     '''
     节点连接
@@ -47,7 +48,7 @@ def session(dataset_path, train_path='', test_path=''):
         sess.run(init)
         #划分训练集和测试集
         train_data, test_data = spliting(dataset, 3000)
-        for i in range(1):
+        for i in range(6000):
             for data in input(dataset=train_data, batch_size=500):
                 _ = sess.run(opt, feed_dict={x_f:data[:, :4], x_l:data[:, 4:-3], y:data[:, -3:],
                                              learning_rate:1e-2, is_training:False})
