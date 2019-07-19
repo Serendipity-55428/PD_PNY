@@ -12,6 +12,7 @@ import numpy as np
 from inputdata import LoadFile, SaveFile, onehot, input, guiyi, spliting
 from classifier_first import layers
 from Saving_model_pb import SaveImport_model
+import os
 
 def session(dataset_path, train_path='', test_path=''):
     '''
@@ -69,5 +70,6 @@ def session(dataset_path, train_path='', test_path=''):
 if __name__ == '__main__':
     p = r'/home/xiaosong/桌面/PNY_3cl.pickle'
     session(dataset_path=p)
+    print(os.getcwd())
 
 
