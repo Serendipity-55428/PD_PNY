@@ -28,7 +28,7 @@ class Resnet:
         self.__kernel_size = kernel_size
         self.__padding = padding
         self.__activation = activation
-        self.__kernel_size = kernel_initializer
+        self.__kernel_initializer = kernel_initializer
         self.__name = name
 
     def resnet_2layers(self):
@@ -40,16 +40,16 @@ class Resnet:
                                        kernel_size=self.__kernel_size,
                                        padding=self.__padding,
                                        activation=self.__activation,
-                                       kernel_initializer=self.__kernel_size)(self.__x)
+                                       kernel_initializer=self.__kernel_initializer)(self.__x)
         conv2 = tf.keras.layers.Conv2D(filters=self.__filters,
                                        kernel_size=self.__kernel_size,
                                        padding=self.__padding,
-                                       kernel_initializer=self.__kernel_size)(conv1)
+                                       kernel_initializer=self.__kernel_initializer)(conv1)
         if self.__x.get_shape().as_list()[-1] != conv2.get_shape().as_list()[-1]:
             x = tf.keras.layers.Conv2D(filters=self.__filters,
                                        kernel_size=[1, 1],
                                        padding=self.__padding,
-                                       kernel_initializer=self.__kernel_size)(self.__x)
+                                       kernel_initializer=self.__kernel_initializer)(self.__x)
         else:
             x = self.__x
         combination = tf.keras.layers.Add()([conv2, x])
@@ -61,20 +61,20 @@ class Resnet:
                                        kernel_size=[1, 1],
                                        padding=self.__padding,
                                        activation=self.__activation,
-                                       kernel_initializer=self.__kernel_size)(self.__x)
+                                       kernel_initializer=self.__kernel_initializer)(self.__x)
         conv2 = tf.keras.layers.Conv2D(filters=self.__filters // 4,
                                        kernel_size=self.__kernel_size,
                                        padding=self.__padding,
-                                       kernel_initializer=self.__kernel_size)(conv1)
+                                       kernel_initializer=self.__kernel_initializer)(conv1)
         conv3 = tf.keras.layers.Conv2D(filters=self.__filters,
-                                       kernel_size=self.__kernel_size,
+                                       kernel_size=[1, 1],
                                        padding=self.__padding,
-                                       kernel_initializer=self.__kernel_size)(conv2)
+                                       kernel_initializer=self.__kernel_initializer)(conv2)
         if self.__x.get_shape().as_list()[-1] != conv2.get_shape().as_list()[-1]:
             x = tf.keras.layers.Conv2D(filters=self.__filters,
                                        kernel_size=[1, 1],
                                        padding=self.__padding,
-                                       kernel_initializer=self.__kernel_size)(self.__x)
+                                       kernel_initializer=self.__kernel_initializer)(self.__x)
         else:
             x = self.__x
         combination = tf.keras.layers.Add()([conv3, x])
@@ -91,14 +91,22 @@ def subnet_1(x_f, x_l, is_training):
     '''
     with tf.name_scope('sub_cnn'):
         x_reshape = tf.reshape(tensor=x_l, shape=[-1, 10, 10, 1], name='x_reshape')
-        conv = tf.keras.layers.Conv2D(filters=16, kernel_size=[5, 5], padding='same', activation=tf.nn.relu,
+        conv = tf.keras.layers.Conv2D(filters=32, kernel_size=[5, 5], padding='same', activation=tf.nn.relu,
                                        kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv1')(x_reshape)
         pool1 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool1')(conv)
-        resnet = Resnet(x=pool1, filters=32, kernel_size=[3, 3], name='resnet1')
+        resnet = Resnet(x=pool1, filters=64, kernel_size=[3, 3], name='resnet1')
         res1 = resnet.resnet_2layers()
+
         resnet2 = Resnet(x=res1, filters=128, kernel_size=[3, 3], name='resnet2')
         res2 = resnet2.resnet_3layers()
-        flat = tf.keras.layers.Flatten(name='flat')(res2)
+
+        resnet3 = Resnet(x=res2, filters=256, kernel_size=[3, 3], name='resnet3')
+        res3 = resnet3.resnet_3layers()
+
+        resnet4 = Resnet(x=res3, filters=256, kernel_size=[3, 3], name='resnet4')
+        res4 = resnet4.resnet_2layers()
+
+        flat = tf.keras.layers.Flatten(name='flat')(res4)
     with tf.name_scope('sub_dnn'):
         x_dnn = tf.concat(values=[flat, x_f], axis=1)
         x_fc1 = tf.keras.layers.Dense(units=100, activation=tf.nn.relu, use_bias=True,
@@ -128,11 +136,17 @@ def subnet_2(x_f, x_l, is_training):
         conv = tf.keras.layers.Conv2D(filters=16, kernel_size=[5, 5], padding='same', activation=tf.nn.relu,
                                        kernel_initializer=tf.keras.initializers.TruncatedNormal, name='conv1')(x_reshape)
         pool1 = tf.keras.layers.MaxPool2D(pool_size=[2, 2], strides=2, padding='same', name='pool1')(conv)
+
         resnet = Resnet(x=pool1, filters=32, kernel_size=[3, 3], name='resnet1')
         res1 = resnet.resnet_2layers()
+
         resnet2 = Resnet(x=res1, filters=128, kernel_size=[3, 3], name='resnet2')
         res2 = resnet2.resnet_3layers()
-        flat = tf.keras.layers.Flatten(name='flat')(res2)
+
+        resnet3 = Resnet(x=res2, filters=256, kernel_size=[3, 3], name='resnet3')
+        res3 = resnet3.resnet_2layers()
+
+        flat = tf.keras.layers.Flatten(name='flat')(res3)
     with tf.name_scope('sub_dnn'):
         x_dnn = tf.concat(values=[flat, x_f], axis=1)
         x_fc1 = tf.keras.layers.Dense(units=100, activation=tf.nn.relu, use_bias=True,

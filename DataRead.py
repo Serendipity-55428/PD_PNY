@@ -169,10 +169,18 @@ if __name__ == '__main__':
     save_pickle = r'/home/xiaosong/桌面/PNY_all.pickle'
     # save_xlsx = r'/home/xiaosong/桌面/datasets.xlsx'
     # Numpy2Excel(data= dataset, save_p= save_xlsx)
-    SaveFile(data=dataset, savepickle_p=save_pickle)
+    # SaveFile(data=dataset, savepickle_p=save_pickle)
 
     #划分最优半径含0.01和不含0.01的数据
-    # data_all_ = LoadFile(p=save_pickle)
+    data_all_ = LoadFile(p=save_pickle)
+    rs = data_all_[:, -1]
+    rs_dict = Counter(rs)
+    for key, value in rs_dict.items():
+        print('%s: %s' % (key, value))
+    rs_list = list(rs_dict.keys())
+    rs_list = sorted(rs_list)
+    for key, value in dict(list(enumerate(rs_list))).items():
+        print(key, value)
     # data_all = pd.DataFrame(data_all_)
     # print(data_all)
     # data_no_noise = data_all.loc[data_all[24] != 0.01]

@@ -24,7 +24,6 @@ def session_sub1(dataset_path, train_path='', test_path=''):
     '''
     #导入数据集
     dataset = LoadFile(p=dataset_path)
-    # dataset = guiyi(dataset)
     dataset = onehot(dataset)
     g1 = tf.Graph()
     with g1.as_default():
@@ -43,11 +42,11 @@ def session_sub1(dataset_path, train_path='', test_path=''):
         with tf.name_scope('etc'):
             init = tf.global_variables_initializer()
             gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options), graph=g) as sess:
+    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options), graph=g1) as sess:
         sess.run(init)
         # 划分训练集和测试集
-        train_data, test_data = spliting(dataset, 3000)
-        for i in range(6000):
+        train_data, test_data = spliting(dataset, 2269)
+        for i in range(10000):
             for data in input(dataset=train_data, batch_size=500):
                 _ = sess.run(opt, feed_dict={x_f: data[:, :4], x_l: data[:, 4:-3], y: data[:, -3:],
                                              learning_rate: 1e-2, is_training: False})
@@ -62,7 +61,8 @@ def session_sub1(dataset_path, train_path='', test_path=''):
                 print('第%s轮训练集损失函数值为: %s  训练集准确率为: %s  测试集准确率为: %s' % (i, loss_, acc_1, acc_2))
         # 保存模型到文件当前脚本文件路径下的pb格式
         saving_model = SaveImport_model(sess_ori=sess, file_suffix=r'/second_classifier_1',
-                                        ops=(output, x_f, x_l, is_training), usefulplaceholder_count=4)
+                                        ops=(output, x_f, x_l, is_training), usefulplaceholder_count=4,
+                                        pb_file_path=r'/home/xiaosong/full_model_1')
         saving_model.save_pb()
 
 def session_sub2(dataset_path, train_path='', test_path=''):
@@ -97,7 +97,7 @@ def session_sub2(dataset_path, train_path='', test_path=''):
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options), graph=g) as sess:
         sess.run(init)
         # 划分训练集和测试集
-        train_data, test_data = spliting(dataset, 3000)
+        train_data, test_data = spliting(dataset, 3300)
         for i in range(6000):
             for data in input(dataset=train_data, batch_size=500):
                 _ = sess.run(opt, feed_dict={x_f: data[:, :4], x_l: data[:, 4:-11], y: data[:, -11:],
@@ -117,4 +117,7 @@ def session_sub2(dataset_path, train_path='', test_path=''):
         saving_model.save_pb()
 
 if __name__ == '__main__':
-    pass
+    p1 = r'/home/xiaosong/桌面/data_sub1.pickle'
+    p2 = r'/home/xiaosong/桌面/data_sub2.pickle'
+    session_sub1(dataset_path=p1)
+    # session_sub2(dataset_path=p2)
