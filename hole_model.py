@@ -147,7 +147,7 @@ if __name__ == '__main__':
     r_1 = np.where(np.abs(r_finally-r_real)<1e-2, 1, 0)
     r_sum = np.sum(r_1)
     acc = r_sum / r_1.shape[0]
-    print(acc)
+    print('5100个测试样本的预测精确度为: %s' % acc)
 
 
 
