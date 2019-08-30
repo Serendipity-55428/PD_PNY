@@ -21,7 +21,7 @@ def first_check(input):
     :param input: 输入特征向量(矩阵)/标签
     :return: 半径所属大类别, numpy.ndarray
     '''
-    pb_file_path = r'/home/xiaosong/桌面/model/full_model'
+    pb_file_path = r'/home/xiaosong/桌面/pny相关数据/model/full_model'
     g1 = tf.Graph()
     with g1.as_default():
         init = tf.global_variables_initializer()
@@ -45,7 +45,7 @@ def second_check1(input):
     :return: 具体类别, numpy.ndarray
     '''
     dict1 = {0:7.174541, 1:17.936353, 2:20.0}
-    pb_file_path = r'/home/xiaosong/桌面/model/full_model_1'
+    pb_file_path = r'/home/xiaosong/桌面/pny相关数据/model/full_model_1'
     g2 = tf.Graph()
     with g2.as_default():
         init = tf.global_variables_initializer()
@@ -74,7 +74,7 @@ def second_check2(input):
     '''
     dict2 = {0:0.05, 1:3.261155, 2:4.484088, 3:23.915137, 4:35.872705, 5:71.745411,
              6:107.618116, 7:143.490822, 8:179.363527, 9:215.236233, 10:251.108938}
-    pb_file_path = r'/home/xiaosong/桌面/model/full_model_2'
+    pb_file_path = r'/home/xiaosong/桌面/pny相关数据/model/full_model_2'
     g3 = tf.Graph()
     with g3.as_default():
         init = tf.global_variables_initializer()
@@ -134,7 +134,7 @@ def check(input):
     return r_finally, r_real
 
 if __name__ == '__main__':
-    p = r'/home/xiaosong/桌面/PNY_all.pickle'
+    p = r'/home/xiaosong/桌面/pny相关数据/data_pny/PNY_all.pickle'
     input = LoadFile(p=p)
     np.random.shuffle(input)
     dataset_4feature, dataset_dense, label = input[:, :4], input[:, 4:-1], input[:, -1][:, np.newaxis]
