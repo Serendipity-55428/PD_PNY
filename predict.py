@@ -18,7 +18,7 @@ def first_check(input):
     :param input: 输入特征向量(矩阵)/标签
     :return: 半径所属大类别, numpy.ndarray
     '''
-    pb_file_path = r'/home/xiaosong/桌面/model/full_model'
+    pb_file_path = r'/home/xiaosong/桌面/pny相关数据/model/full_model'
     g1 = tf.Graph()
     with g1.as_default():
         init = tf.global_variables_initializer()
@@ -32,6 +32,7 @@ def first_check(input):
         output = import_ops(sess_new=sess, op_name='dnn/Softmax')
         r_classify = sess.run(output, feed_dict={x_f: input[:, :4], x_l: input[:, 4:],
                                                  is_training: False})
+        # tf.summary.FileWriter('log/first_graph', sess.graph)
         r_classify = np.argmax(a=r_classify, axis=1)
     return r_classify
 
@@ -42,7 +43,7 @@ def second_check1(input):
     :return: 具体类别, numpy.ndarray
     '''
     dict1 = {0:7.17, 1:17.93, 2:20}
-    pb_file_path = r'/home/xiaosong/桌面/model/full_model_1'
+    pb_file_path = r'/home/xiaosong/桌面/pny相关数据/model/full_model_1'
     g2 = tf.Graph()
     with g2.as_default():
         init = tf.global_variables_initializer()
@@ -56,6 +57,7 @@ def second_check1(input):
         output = import_ops(sess_new=sess, op_name='dnn/Softmax')
         r_classify = sess.run(output, feed_dict={x_f: input[:, :4], x_l: input[:, 4:],
                                                  is_training: False})
+        # tf.summary.FileWriter('log/second_graph1', sess.graph)
         r_classify = np.argmax(a=r_classify, axis=1)
         r_finally = dict1[r_classify]
         return r_finally
@@ -67,7 +69,7 @@ def second_check2(input):
     :return: 具体类别, numpy.ndarray
     '''
     dict2 = {0:0.05, 1:3.26, 2:4.48, 3:23, 4:35, 5:71, 6:107, 7:143, 8:179, 9:215, 10:251}
-    pb_file_path = r'/home/xiaosong/桌面/model/full_model_2'
+    pb_file_path = r'/home/xiaosong/桌面/pny相关数据/model/full_model_2'
     g3 = tf.Graph()
     with g3.as_default():
         init = tf.global_variables_initializer()
@@ -81,8 +83,10 @@ def second_check2(input):
         output = import_ops(sess_new=sess, op_name='sub_dnn/Softmax')
         r_classify = sess.run(output, feed_dict={x_f: input[:, :4], x_l: input[:, 4:],
                                                  is_training: False})
+        tf.summary.FileWriter('log/second_graph2', sess.graph)
         r_classify = np.argmax(a=r_classify, axis=1)
-        r_finally = dict2[r_classify]
+        # print(r_classify)
+        r_finally = dict2[r_classify[0]]
     return r_finally
 
 def check(input):
