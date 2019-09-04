@@ -107,9 +107,9 @@ def checkclassifier(vector):
     :return: None
     '''
     statistic = Counter(vector)
-    for key, value in statistic.items():
+    statistic = sorted(statistic.items(), key=lambda x: x[0])
+    for key, value in statistic:
         print('%s: %s' % (key, value))
-    print('\n')
 
 # 类别划分通用函数
 def transform(label):
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     rng = np.random.RandomState(2)
     #生成pny数据
     type= 1
-    filename_prefix = r'/home/xiaosong/pny'
+    filename_prefix = r'/home/xiaosong/pny相关数据/pny'
     dataset = GeneratorData(type= type, filename_prefix= filename_prefix)
     rng.shuffle(dataset)
     #查看数据中各个半径的数量
@@ -172,15 +172,15 @@ if __name__ == '__main__':
     SaveFile(data=dataset, savepickle_p=save_pickle)
 
     #划分最优半径含0.01和不含0.01的数据
-    data_all_ = LoadFile(p=save_pickle)
-    rs = data_all_[:, -1]
-    rs_dict = Counter(rs)
-    for key, value in rs_dict.items():
-        print('%s: %s' % (key, value))
-    rs_list = list(rs_dict.keys())
-    rs_list = sorted(rs_list)
-    for key, value in dict(list(enumerate(rs_list))).items():
-        print(key, value)
+    # data_all_ = LoadFile(p=save_pickle)
+    # rs = data_all_[:, -1]
+    # rs_dict = Counter(rs)
+    # for key, value in rs_dict.items():
+    #     print('%s: %s' % (key, value))
+    # rs_list = list(rs_dict.keys())
+    # rs_list = sorted(rs_list)
+    # for key, value in dict(list(enumerate(rs_list))).items():
+    #     print(key, value)
     # data_all = pd.DataFrame(data_all_)
     # print(data_all)
     # data_no_noise = data_all.loc[data_all[24] != 0.01]
